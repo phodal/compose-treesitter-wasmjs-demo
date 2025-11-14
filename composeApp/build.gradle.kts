@@ -54,6 +54,11 @@ kotlin {
             implementation(compose.ui)
             @OptIn(ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
+
+            // Koog AI Framework - JVM only for now
+            implementation("ai.koog:koog-agents:0.5.2")
+            // Koog needs these executors
+            implementation("ai.koog:prompt-executor-llms-all:0.5.2")
         }
     }
 }

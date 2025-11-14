@@ -29,6 +29,7 @@ fun App() {
                 showImage = !showImage
             }) {
                 Text(greetingText)
+                val createGenericModel = ModelRegistry().createGenericModel(LLMProviderType.OPENAI, "gpt-3.5-turbo")
             }
             AnimatedVisibility(showImage) {
                 Image(
