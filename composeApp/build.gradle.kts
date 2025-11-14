@@ -33,7 +33,13 @@ kotlin {
 
     wasmJs {
         outputModuleName = "composeApp"
-        browser()
+        browser {
+            commonWebpackConfig {
+                cssSupport {
+                    enabled.set(true)
+                }
+            }
+        }
         binaries.executable()
     }
 
@@ -59,6 +65,16 @@ kotlin {
             implementation("ai.koog:koog-agents:0.5.2")
             // Koog needs these executors
             implementation("ai.koog:prompt-executor-llms-all:0.5.2")
+        }
+        wasmJsMain.dependencies {
+            implementation(compose.components.resources)
+
+            // web-tree-sitter for JS platform
+            implementation(npm("web-tree-sitter", "0.22.2"))
+            // TreeSitter WASM artifacts - matching autodev-workbench versions
+            implementation(npm("@unit-mesh/treesitter-artifacts", "1.7.4"))
+            // Copy webpack plugin to copy WASM files
+            implementation(devNpm("copy-webpack-plugin", "12.0.2"))
         }
     }
 }
