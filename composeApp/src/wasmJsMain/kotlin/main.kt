@@ -6,14 +6,14 @@ import kotlin.js.Promise
 @OptIn(ExperimentalComposeUiApi::class)
 suspend fun main() {
     suspend fun initialize() {
-        val initPromise: Promise<JsAny> = WebTreeSitter.ParserModule.init().unsafeCast()
+        val initPromise: Promise<JsAny> = WebTreeSitter.Parser.init().unsafeCast()
         initPromise.await<JsAny>()
 
-        val loadPromise: Promise<WebTreeSitter.ParserModule.Language> =
-            WebTreeSitter.ParserModule.Language.load(CodeLanguage.JAVA.getWasmPath()).unsafeCast()
-        val language: WebTreeSitter.ParserModule.Language = loadPromise.await()
+        val loadPromise: Promise<WebTreeSitter.Parser.Language> =
+            WebTreeSitter.Parser.Language.load(CodeLanguage.JAVA.getWasmPath()).unsafeCast()
+        val language: WebTreeSitter.Parser.Language = loadPromise.await()
 
-        val parser = WebTreeSitter.ParserModule()
+        val parser = WebTreeSitter.Parser()
         parser.setLanguage(language)
 
         val javaCode = """

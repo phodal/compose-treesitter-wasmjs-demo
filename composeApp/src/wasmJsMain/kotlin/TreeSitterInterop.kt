@@ -198,8 +198,8 @@ external interface LookaheadIterable : JsAny {
 @JsModule("web-tree-sitter")
 external object WebTreeSitter {
     @JsName("default")
-    class ParserModule : JsAny {
-        companion object {
+    class Parser : JsAny {
+        companion object Companion {
             fun init(): Promise<JsAny>
         }
 
@@ -227,15 +227,14 @@ external object WebTreeSitter {
             fun query(source: String): Query
             fun lookaheadIterator(stateId: Int): LookaheadIterable?
 
-            companion object {
+            companion object Companion {
                 fun load(input: String): Promise<Language>
             }
         }
     }
 }
 
-// Type aliases for backward compatibility
-typealias TreeSitterParser = WebTreeSitter.ParserModule
+typealias TreeSitterParser = WebTreeSitter.Parser
 typealias TreeSitterTree = Tree
 typealias TreeSitterNode = SyntaxNode
 typealias TreeSitterPoint = Point

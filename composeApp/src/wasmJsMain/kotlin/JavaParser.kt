@@ -1,3 +1,5 @@
+import kotlinx.coroutines.await
+
 /**
  * A simple Java code parser using tree-sitter
  */
