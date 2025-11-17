@@ -1,11 +1,9 @@
-import kotlinx.coroutines.await
-
 /**
  * A simple Java code parser using tree-sitter
  */
 class JavaParser {
     private var parser: TreeSitterParser? = null
-    private var language: Language? = null
+    private var language: CodeLanguage? = null
     
     /**
      * Initialize the parser with Java language support

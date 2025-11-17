@@ -1,14 +1,21 @@
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
 import kotlinx.coroutines.await
+import kotlin.js.Promise
 
 @OptIn(ExperimentalComposeUiApi::class)
 suspend fun main() {
     suspend fun initialize() {
-        (WebTreeSitter.ParserModule.init().await() as JsAny)
-        val language: WebTreeSitter.ParserModule.Language = WebTreeSitter.ParserModule.Language.load(Language.JAVA.getWasmPath()).await()!!
-        val parser: WebTreeSitter.ParserModule = WebTreeSitter.ParserModule()
-        parser?.setLanguage(language!!)
+        val initPromise: Promise<JsAny> = WebTreeSitter.ParserModule.init().unsafeCast<Promise<JsAny>>()
+        initPromise.await<JsAny>()
+
+        val loadPromise: Promise<WebTreeSitter.ParserModule.Language> =
+            WebTreeSitter.ParserModule.Language.load(CodeLanguage.JAVA.getWasmPath())
+                .unsafeCast<Promise<WebTreeSitter.ParserModule.Language>>()
+        val language: WebTreeSitter.ParserModule.Language = loadPromise.await<WebTreeSitter.ParserModule.Language>()
+
+        val parser = WebTreeSitter.ParserModule()
+        parser.setLanguage(language)
 
         val javaCode = """
         public class HelloWorld {
@@ -22,16 +29,13 @@ suspend fun main() {
         }
     """.trimIndent()
 
-        val tree = parser?.parse(javaCode)
-        println(tree?.rootNode)
+        val tree = parser.parse(javaCode)
+        println(tree.rootNode)
 
-        val query: Query = language.query("(class_declaration)")
-        println(query)
-        if (tree?.rootNode != null) {
-            val captures = query.captures(tree.rootNode!!, null)
-            println(captures)
-        }
-        println(query)
+        val queryObj = language.query("(class_declaration)")
+        println("queryObj = $queryObj")
+        val captures = queryObj.captures(tree.rootNode, null)
+        println(captures)
     }
 
     initialize()

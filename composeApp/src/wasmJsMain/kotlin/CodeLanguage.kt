@@ -1,7 +1,7 @@
 /**
  * Supported programming languages for tree-sitter parsing
  */
-enum class Language {
+enum class CodeLanguage {
     JAVA,
     KOTLIN,
     JAVASCRIPT,
