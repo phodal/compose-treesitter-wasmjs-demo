@@ -71,29 +71,80 @@ public class HelloWorld {
                     scope.launch {
                         isLoading = true
                         try {
-//                            val parser = JavaParser()
-//                            parser.initialize()
-//
-//                            val result = StringBuilder()
-//                            result.appendLine("=== Parse Results ===\n")
-//
-//                            // Extract class names
-//                            val classNames = parser.extractClassNames(javaCode)
-//                            result.appendLine("📦 Classes found: ${classNames.joinToString(", ")}")
-//                            result.appendLine()
-//
-//                            // Extract method names
-//                            val methodNames = parser.extractMethodNames(javaCode)
-//                            result.appendLine("🔧 Methods found: ${methodNames.joinToString(", ")}")
-//                            result.appendLine()
-//
-//                            // Show syntax tree
-//                            result.appendLine("🌳 Syntax Tree:")
-//                            result.appendLine(parser.parseToString(javaCode))
-//
-//                            parserOutput = result.toString()
+                            val parser = JavaParser()
+                            parser.initialize()
+
+                            val result = StringBuilder()
+                            result.appendLine("=== Java Code Analysis ===\n")
+
+                            // Check for syntax errors first
+                            if (parser.hasSyntaxErrors(javaCode)) {
+                                result.appendLine("⚠️  Syntax errors detected in the code!\n")
+                            }
+
+                            // Extract package name
+                            val packageName = parser.getPackageName(javaCode)
+                            if (packageName != null) {
+                                result.appendLine("📁 Package: $packageName")
+                                result.appendLine()
+                            }
+
+                            // Extract import statements
+                            val imports = parser.extractImports(javaCode)
+                            if (imports.isNotEmpty()) {
+                                result.appendLine("📥 Imports:")
+                                imports.forEach { import ->
+                                    result.appendLine("  - $import")
+                                }
+                                result.appendLine()
+                            }
+
+                            // Extract class names
+                            val classNames = parser.extractClassNames(javaCode)
+                            if (classNames.isNotEmpty()) {
+                                result.appendLine("📦 Classes found: ${classNames.joinToString(", ")}")
+                                result.appendLine()
+                            }
+
+                            // Extract method names
+                            val methodNames = parser.extractMethodNames(javaCode)
+                            if (methodNames.isNotEmpty()) {
+                                result.appendLine("🔧 Methods found: ${methodNames.joinToString(", ")}")
+                                result.appendLine()
+                            }
+
+                            // Extract field names
+                            val fieldNames = parser.extractFieldNames(javaCode)
+                            if (fieldNames.isNotEmpty()) {
+                                result.appendLine("🏷️  Fields found: ${fieldNames.joinToString(", ")}")
+                                result.appendLine()
+                            }
+
+                            // Extract string literals
+                            val stringLiterals = parser.extractStringLiterals(javaCode)
+                            if (stringLiterals.isNotEmpty()) {
+                                result.appendLine("💬 String literals: ${stringLiterals.size} found")
+                                stringLiterals.take(5).forEach { str ->
+                                    result.appendLine("  - $str")
+                                }
+                                if (stringLiterals.size > 5) {
+                                    result.appendLine("  ... and ${stringLiterals.size - 5} more")
+                                }
+                                result.appendLine()
+                            }
+
+                            // Show truncated syntax tree
+                            result.appendLine("🌳 Syntax Tree (first 500 characters):")
+                            val syntaxTree = parser.parseToString(javaCode)
+                            if (syntaxTree.length > 500) {
+                                result.appendLine(syntaxTree.take(500) + "\n... (truncated)")
+                            } else {
+                                result.appendLine(syntaxTree)
+                            }
+
+                            parserOutput = result.toString()
                         } catch (e: Exception) {
-                            parserOutput = "Error: ${e.message}"
+                            parserOutput = "Error: ${e.message}\n\nStack trace: ${e.stackTraceToString()}"
                         } finally {
                             isLoading = false
                         }

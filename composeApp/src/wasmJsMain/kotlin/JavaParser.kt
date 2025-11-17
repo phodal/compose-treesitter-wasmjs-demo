@@ -1,94 +1,232 @@
 import kotlinx.coroutines.await
+import kotlin.js.Promise
 
 /**
- * A simple Java code parser using tree-sitter
+ * Java parser using Tree-sitter for parsing Java code
  */
 class JavaParser {
-    private var parser: TreeSitterParser? = null
-    private var language: CodeLanguage? = null
-    
+    private var parser: WebTreeSitter.Parser? = null
+    private var language: WebTreeSitter.Parser.Language? = null
+    private var isInitialized = false
+
     /**
-     * Initialize the parser with Java language support
+     * Initialize the parser with Java language
      */
     suspend fun initialize() {
+        if (isInitialized) return
 
+        try {
+            // Initialize Tree-sitter
+            val initPromise: Promise<JsAny> = WebTreeSitter.Parser.init().unsafeCast()
+            initPromise.await<JsAny>()
+
+            // Load Java language
+            val loadPromise: Promise<WebTreeSitter.Parser.Language> =
+                WebTreeSitter.Parser.Language.load(CodeLanguage.JAVA.getWasmPath()).unsafeCast()
+            language = loadPromise.await()
+
+            // Create parser and set language
+            parser = WebTreeSitter.Parser()
+            parser?.setLanguage(language)
+
+            isInitialized = true
+        } catch (e: Exception) {
+            throw Exception("Failed to initialize Java parser: ${e.message}", e)
+        }
     }
-    
+
+    /**
+     * Parse Java code and return the syntax tree
+     */
+    private fun parseCode(javaCode: String): Tree {
+        if (!isInitialized) {
+            throw IllegalStateException("Parser not initialized. Call initialize() first.")
+        }
+
+        return parser?.parse(javaCode)
+            ?: throw IllegalStateException("Parser not properly initialized")
+    }
+
     /**
      * Parse Java source code and return the syntax tree
      */
     fun parse(sourceCode: String): TreeSitterTree? {
-        return parser?.parse(sourceCode)
+        return parseCode(sourceCode).unsafeCast<TreeSitterTree>()
     }
-    
+
     /**
      * Parse Java source code and return a formatted string representation
      */
     fun parseToString(sourceCode: String): String {
-        val tree = parse(sourceCode)
-        return tree?.rootNode?.toString() ?: "Failed to parse"
+        val tree = parseCode(sourceCode)
+        return formatNode(tree.rootNode, 0)
     }
-    
+
     /**
      * Extract all method names from Java source code
      */
     fun extractMethodNames(sourceCode: String): List<String> {
-        val tree = parse(sourceCode) ?: return emptyList()
+        val tree = parseCode(sourceCode)
+        val query = language?.query("""
+            (method_declaration
+                name: (identifier) @method.name)
+            (constructor_declaration
+                name: (identifier) @method.name)
+        """.trimIndent()) ?: throw IllegalStateException("Language not initialized")
+
+        val captures = query.captures(tree.rootNode).toArray()
         val methodNames = mutableListOf<String>()
-        
-        // Traverse the tree to find method declarations
-        traverseNode(tree.rootNode) { node ->
-            if (node.type == "method_declaration") {
-                // Find the method name (identifier node)
-                for (i in 0 until node.childCount) {
-                    val child = node.child(i)
-                    if (child?.type == "identifier") {
-                        methodNames.add(child.text)
-                        break
-                    }
-                }
+
+        for (capture in captures) {
+            if (capture.name == "method.name") {
+                methodNames.add(capture.node.text)
             }
         }
-        
-        return methodNames
+
+        query.delete()
+        return methodNames.distinct()
     }
-    
+
     /**
      * Extract all class names from Java source code
      */
     fun extractClassNames(sourceCode: String): List<String> {
-        val tree = parse(sourceCode) ?: return emptyList()
+        val tree = parseCode(sourceCode)
+        val query = language?.query("(class_declaration name: (identifier) @class.name)")
+            ?: throw IllegalStateException("Language not initialized")
+
+        val captures = query.captures(tree.rootNode).toArray()
         val classNames = mutableListOf<String>()
-        
-        // Traverse the tree to find class declarations
-        traverseNode(tree.rootNode) { node ->
-            if (node.type == "class_declaration") {
-                // Find the class name (identifier node)
-                for (i in 0 until node.childCount) {
-                    val child = node.child(i)
-                    if (child?.type == "identifier") {
-                        classNames.add(child.text)
-                        break
-                    }
-                }
+
+        for (capture in captures) {
+            if (capture.name == "class.name") {
+                classNames.add(capture.node.text)
             }
         }
-        
-        return classNames
+
+        query.delete()
+        return classNames.distinct()
     }
-    
+
     /**
-     * Traverse the syntax tree and apply a function to each node
+     * Extract field names from Java code
      */
-    private fun traverseNode(node: TreeSitterNode, action: (TreeSitterNode) -> Unit) {
-        action(node)
-        
-        for (i in 0 until node.childCount) {
-            val child = node.child(i)
-            if (child != null) {
-                traverseNode(child, action)
+    fun extractFieldNames(sourceCode: String): List<String> {
+        val tree = parseCode(sourceCode)
+        val query = language?.query("""
+            (field_declaration
+                declarator: (variable_declarator
+                    name: (identifier) @field.name))
+        """.trimIndent()) ?: throw IllegalStateException("Language not initialized")
+
+        val captures = query.captures(tree.rootNode).toArray()
+        val fieldNames = mutableListOf<String>()
+
+        for (capture in captures) {
+            if (capture.name == "field.name") {
+                fieldNames.add(capture.node.text)
             }
         }
+
+        query.delete()
+        return fieldNames.distinct()
+    }
+
+    /**
+     * Extract import statements from Java code
+     */
+    fun extractImports(sourceCode: String): List<String> {
+        val tree = parseCode(sourceCode)
+        val query = language?.query("(import_declaration (scoped_identifier) @import.name)")
+            ?: throw IllegalStateException("Language not initialized")
+
+        val captures = query.captures(tree.rootNode).toArray()
+        val imports = mutableListOf<String>()
+
+        for (capture in captures) {
+            if (capture.name == "import.name") {
+                imports.add(capture.node.text)
+            }
+        }
+
+        query.delete()
+        return imports.distinct()
+    }
+
+    /**
+     * Get package declaration from Java code
+     */
+    fun getPackageName(sourceCode: String): String? {
+        val tree = parseCode(sourceCode)
+        val query = language?.query("(package_declaration (scoped_identifier) @package.name)")
+            ?: throw IllegalStateException("Language not initialized")
+
+        val captures = query.captures(tree.rootNode).toArray()
+        var packageName: String? = null
+
+        for (capture in captures) {
+            if (capture.name == "package.name") {
+                packageName = capture.node.text
+                break
+            }
+        }
+
+        query.delete()
+        return packageName
+    }
+
+    /**
+     * Find all string literals in the code
+     */
+    fun extractStringLiterals(sourceCode: String): List<String> {
+        val tree = parseCode(sourceCode)
+        val query = language?.query("(string_literal) @string")
+            ?: throw IllegalStateException("Language not initialized")
+
+        val captures = query.captures(tree.rootNode).toArray()
+        val strings = mutableListOf<String>()
+
+        for (capture in captures) {
+            if (capture.name == "string") {
+                strings.add(capture.node.text)
+            }
+        }
+
+        query.delete()
+        return strings
+    }
+
+    /**
+     * Check if code contains syntax errors
+     */
+    fun hasSyntaxErrors(sourceCode: String): Boolean {
+        val tree = parseCode(sourceCode)
+        return tree.rootNode.hasError || tree.rootNode.isError
+    }
+
+    /**
+     * Format a node and its children as a readable string
+     */
+    private fun formatNode(node: SyntaxNode, depth: Int): String {
+        val indent = "  ".repeat(depth)
+        val result = StringBuilder()
+
+        result.appendLine("${indent}${node.type} [${node.startPosition.row}:${node.startPosition.column} - ${node.endPosition.row}:${node.endPosition.column}]")
+
+        if (node.text.isNotEmpty() && node.isNamed) {
+            val textPreview = node.text.take(50).replace("\n", "\\n")
+            if (node.text.length > 50) {
+                result.appendLine("${indent}  Text: \"$textPreview...\"")
+            } else {
+                result.appendLine("${indent}  Text: \"$textPreview\"")
+            }
+        }
+
+        for (child in node.children.toArray()) {
+            result.append(formatNode(child, depth + 1))
+        }
+
+        return result.toString()
     }
 }
 
