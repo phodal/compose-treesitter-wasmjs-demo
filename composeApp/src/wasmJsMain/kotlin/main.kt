@@ -6,13 +6,12 @@ import kotlin.js.Promise
 @OptIn(ExperimentalComposeUiApi::class)
 suspend fun main() {
     suspend fun initialize() {
-        val initPromise: Promise<JsAny> = WebTreeSitter.ParserModule.init().unsafeCast<Promise<JsAny>>()
+        val initPromise: Promise<JsAny> = WebTreeSitter.ParserModule.init().unsafeCast()
         initPromise.await<JsAny>()
 
         val loadPromise: Promise<WebTreeSitter.ParserModule.Language> =
-            WebTreeSitter.ParserModule.Language.load(CodeLanguage.JAVA.getWasmPath())
-                .unsafeCast<Promise<WebTreeSitter.ParserModule.Language>>()
-        val language: WebTreeSitter.ParserModule.Language = loadPromise.await<WebTreeSitter.ParserModule.Language>()
+            WebTreeSitter.ParserModule.Language.load(CodeLanguage.JAVA.getWasmPath()).unsafeCast()
+        val language: WebTreeSitter.ParserModule.Language = loadPromise.await()
 
         val parser = WebTreeSitter.ParserModule()
         parser.setLanguage(language)
@@ -30,10 +29,10 @@ suspend fun main() {
     """.trimIndent()
 
         val tree = parser.parse(javaCode)
-        println(tree.rootNode)
+        println(tree.rootNode.toString())
 
         val queryObj = language.query("(class_declaration)")
-        println("queryObj = $queryObj")
+        debug(queryObj)
         val captures = queryObj.captures(tree.rootNode, null)
         println(captures)
     }
@@ -44,3 +43,5 @@ suspend fun main() {
         ParserDemo()
     }
 }
+
+fun debug(queryObj: Query): Unit = js("""console.log(queryObj)""")
