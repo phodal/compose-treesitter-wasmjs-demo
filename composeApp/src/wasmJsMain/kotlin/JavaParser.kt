@@ -11,9 +11,7 @@ class JavaParser {
      * Initialize the parser with Java language support
      */
     suspend fun initialize() {
-        (WebTreeSitter.ParserModule.init().await() as JsAny)
-        language = WebTreeSitter.ParserModule.Language.load(Language.JAVA.getWasmPath()).await()!!
-        parser = WebTreeSitter.Parser()
+
     }
     
     /**

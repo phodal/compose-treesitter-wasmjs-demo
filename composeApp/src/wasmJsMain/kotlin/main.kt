@@ -6,7 +6,7 @@ import kotlinx.coroutines.await
 suspend fun main() {
     suspend fun initialize() {
         (WebTreeSitter.ParserModule.init().await() as JsAny)
-        val language: TreeSitterLanguage = WebTreeSitter.ParserModule.Language.load(Language.JAVA.getWasmPath()).await()!!
+        val language: WebTreeSitter.ParserModule.Language = WebTreeSitter.ParserModule.Language.load(Language.JAVA.getWasmPath()).await()!!
         val parser: WebTreeSitter.ParserModule = WebTreeSitter.ParserModule()
         parser?.setLanguage(language!!)
 
@@ -22,8 +22,16 @@ suspend fun main() {
         }
     """.trimIndent()
 
-        val result = parser?.parse(javaCode)
-        println(result?.rootNode)
+        val tree = parser?.parse(javaCode)
+        println(tree?.rootNode)
+
+        val query: Query = language.query("(class_declaration)")
+        println(query)
+        if (tree?.rootNode != null) {
+            val captures = query.captures(tree.rootNode!!, null)
+            println(captures)
+        }
+        println(query)
     }
 
     initialize()
