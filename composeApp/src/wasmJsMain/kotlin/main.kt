@@ -29,12 +29,15 @@ suspend fun main() {
     """.trimIndent()
 
         val tree = parser.parse(javaCode)
-        println(tree.rootNode.toString())
+        debugNode(tree.rootNode)
 
-        val queryObj = language.query("(class_declaration)")
+        val queryObj = language.query("(class_declaration (_) @classBody)")
         debug(queryObj)
-        val captures = queryObj.captures(tree.rootNode, null)
-        println(captures)
+        val captures = queryObj.captures(tree.rootNode)
+        captures.toList().forEach {
+            println(it.node.type)
+            println(it.node.text)
+        }
     }
 
     initialize()
@@ -45,3 +48,4 @@ suspend fun main() {
 }
 
 fun debug(queryObj: Query): Unit = js("""console.log(queryObj)""")
+fun debugNode(queryObj: SyntaxNode): Unit = js("""console.log(queryObj)""")

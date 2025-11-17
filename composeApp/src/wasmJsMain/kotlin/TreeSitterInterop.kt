@@ -1,12 +1,10 @@
 import kotlin.js.Promise
 
-// Point
 external interface Point : JsAny {
     val row: Int
     val column: Int
 }
 
-// Range
 external interface Range : JsAny {
     val startIndex: Int
     val endIndex: Int
@@ -14,7 +12,6 @@ external interface Range : JsAny {
     val endPosition: Point
 }
 
-// Edit
 external interface Edit : JsAny {
     val startIndex: Int
     val oldEndIndex: Int
@@ -35,7 +32,6 @@ external interface Options : JsAny {
     var includedRanges: JsArray<Range>?
 }
 
-// QueryOptions
 external interface QueryOptions : JsAny {
     var startPosition: Point?
     var endPosition: Point?
@@ -45,7 +41,6 @@ external interface QueryOptions : JsAny {
     var maxStartDepth: Int?
 }
 
-// QueryCapture
 external interface QueryCapture : JsAny {
     val name: String
     val text: String?
@@ -55,19 +50,16 @@ external interface QueryCapture : JsAny {
     val refutedProperties: JsAny?
 }
 
-// QueryMatch
 external interface QueryMatch : JsAny {
     val pattern: Int
     val captures: JsArray<QueryCapture>
 }
 
-// PredicateResult
 external interface PredicateResult : JsAny {
     val operator: String
     val operands: JsArray<JsAny>
 }
 
-// Query
 external interface Query : JsAny {
     val captureNames: JsArray<JsAny>
     val predicates: JsArray<JsAny>
@@ -75,9 +67,11 @@ external interface Query : JsAny {
     val assertedProperties: JsArray<JsAny>
     val refutedProperties: JsArray<JsAny>
     val matchLimit: Int
-    
     fun delete()
+    /// 如果一个方法是 optional，在 Kotlin 不要传 null 过来，简单一点，再复制一个不带 null 的
     fun captures(node: SyntaxNode, options: QueryOptions?): JsArray<QueryCapture>
+    fun captures(node: SyntaxNode): JsArray<QueryCapture>
+    fun matches(node: SyntaxNode): JsArray<QueryMatch>
     fun matches(node: SyntaxNode, options: QueryOptions?): JsArray<QueryMatch>
     fun predicatesForPattern(patternIndex: Int): JsArray<PredicateResult>
     fun disableCapture(captureName: String)
@@ -89,7 +83,6 @@ external interface Query : JsAny {
     fun didExceedMatchLimit(): Boolean
 }
 
-// SyntaxNode
 external interface SyntaxNode : JsAny {
     val tree: Tree
     val id: Int
@@ -124,7 +117,7 @@ external interface SyntaxNode : JsAny {
     val previousSibling: SyntaxNode?
     val previousNamedSibling: SyntaxNode?
     val descendantCount: Int
-    
+
     fun equals(other: SyntaxNode): Boolean
     fun child(index: Int): SyntaxNode?
     fun namedChild(index: Int): SyntaxNode?
@@ -165,7 +158,7 @@ external interface TreeCursor : JsAny {
     val currentFieldId: Int
     val currentDepth: Int
     val currentDescendantIndex: Int
-    
+
     fun reset(node: SyntaxNode)
     fun resetTo(cursor: TreeCursor)
     fun delete()
@@ -182,7 +175,7 @@ external interface TreeCursor : JsAny {
 // Tree
 external interface Tree : JsAny {
     val rootNode: SyntaxNode
-    
+
     fun rootNodeWithOffset(offsetBytes: Int, offsetExtent: Point): SyntaxNode
     fun copy(): Tree
     fun delete()
@@ -197,7 +190,6 @@ external interface Tree : JsAny {
 external interface LookaheadIterable : JsAny {
     val currentTypeId: Int
     val currentType: String
-    
     fun delete()
     fun resetState(stateId: Int): Boolean
 }
@@ -224,7 +216,7 @@ external object WebTreeSitter {
             val fieldCount: Int
             val stateCount: Int
             val nodeTypeCount: Int
-            
+
             fun fieldNameForId(fieldId: Int): String?
             fun fieldIdForName(fieldName: String): Int?
             fun idForNodeType(type: String, named: Boolean): Int
