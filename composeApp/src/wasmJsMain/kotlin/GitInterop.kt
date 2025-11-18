@@ -81,5 +81,17 @@ fun jsArrayOf(vararg elements: String): JsArray<JsString> {
     return array
 }
 
-
+/**
+ * Helper extension to convert JsArray to Kotlin List
+ */
+fun <T : JsAny> JsArray<T>.toList(): List<T> {
+    val result = mutableListOf<T>()
+    for (i in 0 until this.length) {
+        val item = this[i]
+        if (item != null) {
+            result.add(item)
+        }
+    }
+    return result
+}
 

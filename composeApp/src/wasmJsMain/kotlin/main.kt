@@ -1,6 +1,8 @@
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
 import kotlinx.coroutines.await
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.GlobalScope
 import kotlin.js.Promise
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -9,7 +11,52 @@ suspend fun main() {
         // Initialize wasm-git
         val git: LibGit2Module = lg2().await()
         debugGit(git)
+        
+        // Create GitRepository instance
+        val repo = GitRepository(git)
+        
+        // Configure git user
+        repo.configureUser("Test User", "test@example.com")
+        
+        // Example: Clone a repository
+        console.log("=== Starting Git Clone Demo ===")
+        try {
+            // Clone the test repository
+            val files = repo.clone("https://github.com/unit-mesh/untitled")
+            console.log("Repository cloned successfully!")
+            console.log("Files in repository: ${files.joinToString(", ")}")
+            
+            // Execute git status
+            console.log("\n=== Git Status ===")
+            repo.status()
+            
+            // Execute git log (show last 5 commits)
+            console.log("\n=== Git Log (last 5 commits) ===")
+            repo.log("--oneline", "-5")
+            
+            // Execute git branch
+            console.log("\n=== Git Branches ===")
+            repo.branch("-a")
+            
+            // Example: Read a file (adjust path based on actual repo structure)
+            try {
+                val readme = repo.readFile("README.md")
+                console.log("\n=== README.md content ===")
+                console.log(readme.take(200) + "...") // Show first 200 chars
+            } catch (e: Throwable) {
+                console.warn("README.md not found or couldn't be read")
+            }
+            
+            // Example: Execute git diff (if there are any changes)
+            console.log("\n=== Git Diff ===")
+            repo.diff()
+            
+        } catch (e: Throwable) {
+            console.error("Git operation failed: ${e.message}")
+            e.printStackTrace()
+        }
 
+        // Initialize TreeSitter (original code)
         val initPromise: Promise<JsAny> = WebTreeSitter.Parser.init().unsafeCast()
         initPromise.await<JsAny>()
 
