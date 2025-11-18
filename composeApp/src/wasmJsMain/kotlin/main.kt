@@ -9,17 +9,17 @@ import kotlin.js.Promise
 suspend fun main() {
     suspend fun initialize() {
         // Create module config to capture Git output
-        val config = createModuleConfig(
-            onPrint = { text ->
-                console.log("[Git Output] $text")
-            },
-            onPrintErr = { text ->
-                console.error("[Git Error] $text")
-            }
-        )
+//        val config = createModuleConfig(
+//            onPrint = { text ->
+//                console.log("[Git Output] $text")
+//            },
+//            onPrintErr = { text ->
+//                console.error("[Git Error] $text")
+//            },
+//        )
 
         // Initialize wasm-git with config
-        val git: LibGit2Module = lg2(config).await()
+        val git: LibGit2Module = lg2().await()
         debugGit(git)
 
         // Create GitRepository instance
@@ -40,8 +40,7 @@ suspend fun main() {
         console.log("\n=== Git Status ===")
         console.log("Executing: git status")
         try {
-            val status = repo.status()
-            console.log(status.toString())
+            repo.status()
         } catch (e: Throwable) {
             console.warn("Status error: ${e.message}")
         }

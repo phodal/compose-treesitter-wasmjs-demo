@@ -26,8 +26,8 @@ class GitRepository(private val git: LibGit2Module) {
     suspend fun clone(url: String): List<String> {
         currentRepoRootDir = url.substringAfterLast('/')
         console.log("Cloning $url into $currentRepoRootDir...")
-        
         val exitCode = git.callMain(jsArrayOf("clone", url, currentRepoRootDir!!))
+        console.log("End clone with exit code: $exitCode")
         if (exitCode != 0) {
             console.error("Clone failed with exit code: $exitCode")
             throw Exception("Git clone failed with exit code: $exitCode")
