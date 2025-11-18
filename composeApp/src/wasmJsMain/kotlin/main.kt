@@ -7,7 +7,7 @@ import kotlin.js.Promise
 
 @OptIn(ExperimentalComposeUiApi::class)
 suspend fun main() {
-    suspend fun executeGit() {
+    suspend fun createGit(): LibGit2Module {
         val config = createModuleConfig(
             onPrint = { text ->
                 console.log("[Git Output] $text")
@@ -19,6 +19,11 @@ suspend fun main() {
 
         val git: LibGit2Module = lg2(config).await()
         debugGit(git)
+        return git
+    }
+
+    suspend fun executeGit() {
+        val git: LibGit2Module = createGit()
 
         // Create GitRepository instance
         val repo = GitRepository(git)
@@ -69,8 +74,15 @@ suspend fun main() {
     }
 
     suspend fun initialize() {
-        // Create module config to capture Git output
-        executeGit()
+
+        val git: LibGit2Module = createGit()
+        console.log("creating file")
+        git.FS.writeFile("demo.txt", "Hello World!")
+        console.log("created file")
+        val fileArray: Array<JsNumber> = git.FS.readFile("demo.txt").toArray()
+        val bytes = fileArray.map { it.toInt().toByte() }.toByteArray()
+        val content = bytes.decodeToString()
+        console.log(content)
 
         // Initialize TreeSitter (original code)
         val initPromise: Promise<JsAny> = WebTreeSitter.Parser.init().unsafeCast()

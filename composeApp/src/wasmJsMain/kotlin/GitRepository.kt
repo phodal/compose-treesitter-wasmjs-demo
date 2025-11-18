@@ -141,7 +141,7 @@ class GitRepository(private val git: LibGit2Module) {
      */
     fun readFile(path: String): String {
         try {
-            return git.FS.readFile(path, "utf8".toJsString()).toString()
+            return git.FS.readFile(path).toString()
         } catch (e: Throwable) {
             console.error("Failed to read file $path: ${e.message}")
             throw e
