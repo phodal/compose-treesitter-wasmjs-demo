@@ -29,61 +29,59 @@ suspend fun main() {
 
         // Example: Clone a repository
         console.log("=== Starting Git Clone Demo ===")
-//        try {
-        // Clone the test repository
-        val files = repo.clone("https://github.com/unit-mesh/untitled")
-        console.log("Repository cloned successfully!")
-        console.log("Files in repository: ${files.joinToString(", ")}")
-
-        // Execute git status
-        console.log("\n=== Git Status ===")
-        console.log("Executing: git status")
         try {
-            repo.status()
-        } catch (e: Throwable) {
-            console.warn("Status error: ${e.message}")
-        }
+            val files = repo.clone("https://github.com/unit-mesh/untitled")
+            console.log("Repository cloned successfully!")
+            console.log("Files in repository: ${files.joinToString(", ")}")
 
-        // Execute git log (show last 5 commits)
-        console.log("\n=== Git Log (last 5 commits) ===")
-        try {
-            repo.log("--oneline", "-5")
-        } catch (e: Throwable) {
-            console.warn("Log error: ${e.message}")
-        }
-
-        // Execute git branch - use simpler command
-        console.log("\n=== Git Branches ===")
-        console.log("Executing: git branch -a")
-        try {
-            repo.execute("branch", "-a")
-        } catch (e: Throwable) {
-            console.warn("Branch command error: ${e.message}")
-            // Try without -a flag
+            // Execute git status
+            console.log("\n=== Git Status ===")
+            console.log("Executing: git status")
             try {
-                repo.execute("branch")
-            } catch (e2: Throwable) {
-                console.warn("Branch list failed: ${e2.message}")
+                repo.status()
+            } catch (e: Throwable) {
+                console.warn("Status error: ${e.message}")
             }
-        }
 
-        // Example: Read a file (adjust path based on actual repo structure)
-        console.log("\n=== README.md content ===")
-        try {
-            val readme = repo.readFile("README.md")
-            console.log(readme.take(200) + "...") // Show first 200 chars
+            // Execute git log (show last 5 commits)
+            console.log("\n=== Git Log (last 5 commits) ===")
+            try {
+                repo.log("--oneline", "-5")
+            } catch (e: Throwable) {
+                console.warn("Log error: ${e.message}")
+            }
+
+            // Execute git branch - use simpler command
+            console.log("\n=== Git Branches ===")
+            console.log("Executing: git branch -a")
+            try {
+                repo.execute("branch", "-a")
+            } catch (e: Throwable) {
+                console.warn("Branch command error: ${e.message}")
+                // Try without -a flag
+                try {
+                    repo.execute("branch")
+                } catch (e2: Throwable) {
+                    console.warn("Branch list failed: ${e2.message}")
+                }
+            }
+
+            // Example: Read a file (adjust path based on actual repo structure)
+            console.log("\n=== README.md content ===")
+            try {
+                val readme = repo.readFile("README.md")
+                console.log(readme.take(200) + "...") // Show first 200 chars
+            } catch (e: Throwable) {
+                console.warn("README.md not found or couldn't be read: ${e.message}")
+            }
+
+            // Example: Execute git diff (if there are any changes)
+            console.log("\n=== Git Diff ===")
+            repo.diff()
         } catch (e: Throwable) {
-            console.warn("README.md not found or couldn't be read: ${e.message}")
+            console.error("Git operation failed: ${e.message}")
+            e.printStackTrace()
         }
-
-        // Example: Execute git diff (if there are any changes)
-        console.log("\n=== Git Diff ===")
-        repo.diff()
-//
-//        } catch (e: Throwable) {
-//            console.error("Git operation failed: ${e.message}")
-//            e.printStackTrace()
-//        }
 
         // Initialize TreeSitter (original code)
         val initPromise: Promise<JsAny> = WebTreeSitter.Parser.init().unsafeCast()
