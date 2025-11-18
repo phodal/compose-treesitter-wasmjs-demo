@@ -48,7 +48,9 @@ external interface EmscriptenFS : JsAny {
     /**
      * Read a file from the virtual file system
      */
-    fun readFile(path: String, options: JsAny?): String
+    fun readFile(path: String, options: JsString?): JsAny
+
+//    fun readFile(path: String): JsString
 
     /**
      * Read directory contents

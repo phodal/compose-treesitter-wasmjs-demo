@@ -141,8 +141,7 @@ class GitRepository(private val git: LibGit2Module) {
      */
     fun readFile(path: String): String {
         try {
-            // Pass null to get string content (default encoding is utf8)
-            return git.FS.readFile(path, null)
+            return git.FS.readFile(path, "utf8".toJsString()).toString()
         } catch (e: Throwable) {
             console.error("Failed to read file $path: ${e.message}")
             throw e
@@ -171,9 +170,9 @@ class GitRepository(private val git: LibGit2Module) {
     /**
      * Execute any git command
      * @param command Command and arguments
+     *
      */
     suspend fun execute(vararg command: String): Int {
-        console.log("Executing: git ${command.joinToString(" ")}")
         return git.callMain(jsArrayOf(*command)).await<JsNumber>().toInt()
     }
 
@@ -184,6 +183,7 @@ class GitRepository(private val git: LibGit2Module) {
     
     /**
      * Get current branch name
+     * TODO: symbolic-ref not supporting
      */
     suspend fun getCurrentBranch(): String? {
         return try {

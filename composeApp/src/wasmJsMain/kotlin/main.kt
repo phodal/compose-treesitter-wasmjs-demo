@@ -7,8 +7,7 @@ import kotlin.js.Promise
 
 @OptIn(ExperimentalComposeUiApi::class)
 suspend fun main() {
-    suspend fun initialize() {
-        // Create module config to capture Git output
+    suspend fun executeGit() {
         val config = createModuleConfig(
             onPrint = { text ->
                 console.log("[Git Output] $text")
@@ -30,7 +29,7 @@ suspend fun main() {
         // Example: Clone a repository
         console.log("=== Starting Git Clone Demo ===")
         try {
-            val files = repo.clone("https://github.com/unit-mesh/untitled")
+            val files = repo.clone("https://github.com/phodal-archive/mini-file")
             console.log("Repository cloned successfully!")
             console.log("Files in repository: ${files.joinToString(", ")}")
 
@@ -51,21 +50,6 @@ suspend fun main() {
                 console.warn("Log error: ${e.message}")
             }
 
-            // Execute git branch - use simpler command
-            console.log("\n=== Git Branches ===")
-            console.log("Executing: git branch -a")
-            try {
-                repo.execute("branch", "-a")
-            } catch (e: Throwable) {
-                console.warn("Branch command error: ${e.message}")
-                // Try without -a flag
-                try {
-                    repo.execute("branch")
-                } catch (e2: Throwable) {
-                    console.warn("Branch list failed: ${e2.message}")
-                }
-            }
-
             // Example: Read a file (adjust path based on actual repo structure)
             console.log("\n=== README.md content ===")
             try {
@@ -82,6 +66,11 @@ suspend fun main() {
             console.error("Git operation failed: ${e.message}")
             e.printStackTrace()
         }
+    }
+
+    suspend fun initialize() {
+        // Create module config to capture Git output
+        executeGit()
 
         // Initialize TreeSitter (original code)
         val initPromise: Promise<JsAny> = WebTreeSitter.Parser.init().unsafeCast()
