@@ -69,6 +69,7 @@ kotlin {
         wasmJsMain.dependencies {
             implementation(compose.components.resources)
 
+            implementation(npm("wasm-git", "0.0.13"))
             // web-tree-sitter for JS platform
             implementation(npm("web-tree-sitter", "0.22.2"))
             // TreeSitter WASM artifacts - matching autodev-workbench versions
