@@ -1,12 +1,15 @@
 import kotlin.js.Promise
 
 /**
- * Load the lg2 module
- * This is the default export from wasm-git/lg2.js
+ * Import wasm-git/lg2.js as default export
+ * lg2.js exports an async function: async function(moduleArg = {})
  */
 @JsModule("wasm-git/lg2.js")
-external fun lg2(config: LibGit2Config? = definedExternally): Promise<LibGit2Module>
+external fun lg2(config: JsAny? = definedExternally): Promise<LibGit2Module>
 
+/**
+ * LibGit2 Module - returned by lg2() function
+ */
 external interface LibGit2Module : JsAny {
     val FS: EmscriptenFS
 
@@ -22,10 +25,9 @@ external interface LibGit2Module : JsAny {
     fun callMain(args: JsArray<JsString>): Int
 }
 
-external interface LibGit2Config : JsAny {
-    var locateFile: ((String) -> String)?
-}
-
+/**
+ * Emscripten File System API
+ */
 external interface EmscriptenFS : JsAny {
     /**
      * Write a file to the virtual file system
@@ -59,3 +61,25 @@ external interface EmscriptenFS : JsAny {
      */
     fun syncfs(populate: Boolean, callback: () -> Unit)
 }
+
+/**
+ * Console for logging
+ */
+@JsName("console")
+external object WasmConsole : JsAny {
+    fun log(message: String)
+    fun error(message: String)
+    fun warn(message: String)
+}
+
+/**
+ * Helper to create JS array of strings
+ */
+fun jsArrayOf(vararg elements: String): JsArray<JsString> {
+    val array = JsArray<JsString>()
+    elements.forEach { array[array.length] = it.toJsString() }
+    return array
+}
+
+
+

@@ -6,6 +6,10 @@ import kotlin.js.Promise
 @OptIn(ExperimentalComposeUiApi::class)
 suspend fun main() {
     suspend fun initialize() {
+        // Initialize wasm-git
+        val git: LibGit2Module = lg2().await()
+        debugGit(git)
+
         val initPromise: Promise<JsAny> = WebTreeSitter.Parser.init().unsafeCast()
         initPromise.await<JsAny>()
 
@@ -49,3 +53,4 @@ suspend fun main() {
 
 fun debug(queryObj: Query): Unit = js("""console.log(queryObj)""")
 fun debugNode(queryObj: SyntaxNode): Unit = js("""console.log(queryObj)""")
+fun debugGit(git: LibGit2Module): Unit = js("""console.log(git)""")
