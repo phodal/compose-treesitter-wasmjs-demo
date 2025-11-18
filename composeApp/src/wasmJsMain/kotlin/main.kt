@@ -28,23 +28,44 @@ suspend fun main() {
             
             // Execute git status
             console.log("\n=== Git Status ===")
-            repo.status()
+            console.log("Executing: git status")
+            try {
+                val status = repo.status()
+                console.log(status.toString())
+            } catch (e: Throwable) {
+                console.warn("Status error: ${e.message}")
+            }
             
             // Execute git log (show last 5 commits)
             console.log("\n=== Git Log (last 5 commits) ===")
-            repo.log("--oneline", "-5")
+            try {
+                repo.log("--oneline", "-5")
+            } catch (e: Throwable) {
+                console.warn("Log error: ${e.message}")
+            }
             
-            // Execute git branch
+            // Execute git branch - use simpler command
             console.log("\n=== Git Branches ===")
-            repo.branch("-a")
+            console.log("Executing: git branch -a")
+            try {
+                repo.execute("branch", "-a")
+            } catch (e: Throwable) {
+                console.warn("Branch command error: ${e.message}")
+                // Try without -a flag
+                try {
+                    repo.execute("branch")
+                } catch (e2: Throwable) {
+                    console.warn("Branch list failed: ${e2.message}")
+                }
+            }
             
             // Example: Read a file (adjust path based on actual repo structure)
+            console.log("\n=== README.md content ===")
             try {
                 val readme = repo.readFile("README.md")
-                console.log("\n=== README.md content ===")
                 console.log(readme.take(200) + "...") // Show first 200 chars
             } catch (e: Throwable) {
-                console.warn("README.md not found or couldn't be read")
+                console.warn("README.md not found or couldn't be read: ${e.message}")
             }
             
             // Example: Execute git diff (if there are any changes)

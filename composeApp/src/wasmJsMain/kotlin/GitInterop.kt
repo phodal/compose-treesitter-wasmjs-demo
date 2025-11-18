@@ -3,6 +3,8 @@ import kotlin.js.Promise
 /**
  * Import wasm-git/lg2.js as default export
  * lg2.js exports an async function: async function(moduleArg = {})
+ *
+ * https://raw.githubusercontent.com/petersalomonsen/githttpserver/refs/heads/master/public/libgit2_webworker.js
  */
 @JsModule("wasm-git/lg2.js")
 external fun lg2(config: JsAny? = definedExternally): Promise<LibGit2Module>
