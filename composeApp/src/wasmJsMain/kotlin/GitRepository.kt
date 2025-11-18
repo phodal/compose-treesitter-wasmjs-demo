@@ -24,6 +24,7 @@ class GitRepository(private val git: LibGit2Module) {
      * @return List of files in the cloned repository
      */
     suspend fun clone(url: String): List<String> {
+        val url = "https://cors-anywhere.com/$url"
         currentRepoRootDir = url.substringAfterLast('/')
         console.log("Cloning $url into $currentRepoRootDir...")
         val exitCode = git.callMain(jsArrayOf("clone", url, currentRepoRootDir!!)).await<JsNumber>().toInt()
