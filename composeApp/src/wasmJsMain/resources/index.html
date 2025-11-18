@@ -3,6 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <title>Compose App</title>
+    <script>
+      (function () {
+        const OriginalXHR = window.XMLHttpRequest;
+
+        function FetchXHR() {
+          this.readyState = 0;
+          this.status = 0;
+          this.statusText = '';
+          this.response = null;
+          this.responseText = null;
+          this.responseURL = '';
+          this.onreadystatechange = null;
+
+          this._method = null;
+          this._url = null;
+          this._async = true;
+          this._headers = {};
+          this._body = null;
+        }
+
+        FetchXHR.prototype.open = function (method, url, async = true) {
+          this._method = method;
+          this._url = url;
+          this._async = async;
+          this.readyState = 1;
+          this._triggerReadyStateChange();
+        };
+
+        FetchXHR.prototype.setRequestHeader = function (header, value) {
+          this._headers[header] = value;
+        };
+
+        FetchXHR.prototype.send = function (body = null) {
+          this._body = body;
+
+          const options = {
+            method: this._method,
+            headers: this._headers,
+            body: this._method.toUpperCase() === 'GET' ? undefined : body,
+          };
+
+          fetch("https://cors-tube.vercel.app/?url=" + this._url, options)
+            .then(async response => {
+              this.status = response.status;
+              this.statusText = response.statusText;
+              this.responseURL = response.url;
+              this.readyState = 2;
+              this._triggerReadyStateChange();
+
+              const contentType = response.headers.get('content-type');
+              if (contentType && contentType.includes('application/json')) {
+                this.response = await response.json();
+                this.responseText = JSON.stringify(this.response);
+              } else {
+                this.responseText = await response.text();
+                this.response = this.responseText;
+              }
+
+              this.readyState = 4;
+              this._triggerReadyStateChange();
+            })
+            .catch(error => {
+              this.readyState = 4;
+              this.status = 0;
+              this.statusText = error.message;
+              this.response = null;
+              this.responseText = null;
+              this._triggerReadyStateChange();
+            });
+        };
+
+        FetchXHR.prototype.abort = function () {
+          console.warn('Abort not implemented in fetch-based XHR shim');
+        };
+
+        FetchXHR.prototype._triggerReadyStateChange = function () {
+          if (typeof this.onreadystatechange === 'function') {
+            try {
+              this.onreadystatechange();
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        };
+
+        window.XMLHttpRequest = FetchXHR;
+      })();
+
+    </script>
     <script type="application/javascript" src="skiko.js"></script>
     <script type="application/javascript" src="composeApp.js"></script>
 </head>
