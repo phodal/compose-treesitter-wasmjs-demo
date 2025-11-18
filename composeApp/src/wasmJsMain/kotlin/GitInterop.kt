@@ -1,13 +1,22 @@
 import kotlin.js.Promise
 
 /**
+ * Module configuration for wasm-git
+ */
+external interface ModuleConfig : JsAny {
+    var print: ((String) -> Unit)?
+    var printErr: ((String) -> Unit)?
+    var onRuntimeInitialized: (() -> Unit)?
+}
+
+/**
  * Import wasm-git/lg2.js as default export
  * lg2.js exports an async function: async function(moduleArg = {})
  *
  * https://raw.githubusercontent.com/petersalomonsen/githttpserver/refs/heads/master/public/libgit2_webworker.js
  */
 @JsModule("wasm-git/lg2.js")
-external fun lg2(config: JsAny? = definedExternally): Promise<LibGit2Module>
+external fun lg2(config: ModuleConfig? = definedExternally): Promise<LibGit2Module>
 
 /**
  * LibGit2 Module - returned by lg2() function
@@ -97,3 +106,21 @@ fun <T : JsAny> JsArray<T>.toList(): List<T> {
     return result
 }
 
+// Create empty config template at top-level - js() call must be single expression
+private val _emptyJsObject: JsAny = js("({})")
+
+/**
+ * Create a Module configuration object for wasm-git
+ */
+fun createModuleConfig(
+    onPrint: ((String) -> Unit)? = null,
+    onPrintErr: ((String) -> Unit)? = null,
+    onRuntimeInitialized: (() -> Unit)? = null
+): ModuleConfig {
+    // Cast and set properties
+    val config = _emptyJsObject.unsafeCast<ModuleConfig>()
+    if (onPrint != null) config.print = onPrint
+    if (onPrintErr != null) config.printErr = onPrintErr
+    if (onRuntimeInitialized != null) config.onRuntimeInitialized = onRuntimeInitialized
+    return config
+}
