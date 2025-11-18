@@ -15,7 +15,7 @@ external interface ModuleConfig : JsAny {
  *
  * https://raw.githubusercontent.com/petersalomonsen/githttpserver/refs/heads/master/public/libgit2_webworker.js
  */
-@JsModule("wasm-git/lg2.js")
+@JsModule("wasm-git/lg2_async.js")
 external fun lg2(config: ModuleConfig? = definedExternally): Promise<LibGit2Module>
 
 /**
@@ -33,7 +33,7 @@ external interface LibGit2Module : JsAny {
      * Call git command with arguments
      * Returns exit code (0 for success)
      */
-    fun callMain(args: JsArray<JsString>): Int
+    fun callMain(args: JsArray<JsString>): Promise<JsNumber>
 }
 
 /**

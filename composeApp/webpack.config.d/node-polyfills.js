@@ -57,8 +57,8 @@ config.plugins.push(
   new CopyWebpackPlugin({
     patterns: [
       {
-        from: '../../node_modules/wasm-git/lg2.wasm',
-        to: 'lg2.wasm'
+        from: '../../node_modules/wasm-git/lg2_async.wasm',
+        to: 'lg2_async.wasm'
       },
       {
         from: '../../node_modules/web-tree-sitter/tree-sitter.wasm',

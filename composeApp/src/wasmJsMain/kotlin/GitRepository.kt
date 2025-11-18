@@ -26,7 +26,7 @@ class GitRepository(private val git: LibGit2Module) {
     suspend fun clone(url: String): List<String> {
         currentRepoRootDir = url.substringAfterLast('/')
         console.log("Cloning $url into $currentRepoRootDir...")
-        val exitCode = git.callMain(jsArrayOf("clone", url, currentRepoRootDir!!))
+        val exitCode = git.callMain(jsArrayOf("clone", url, currentRepoRootDir!!)).await<JsNumber>().toInt()
         console.log("End clone with exit code: $exitCode")
         if (exitCode != 0) {
             console.error("Clone failed with exit code: $exitCode")
@@ -47,91 +47,91 @@ class GitRepository(private val git: LibGit2Module) {
      * @param args Optional arguments (e.g., file path, commit refs)
      * @return Exit code (0 for success)
      */
-    fun diff(vararg args: String): Int {
+    suspend fun diff(vararg args: String): Int {
         val allArgs = listOf("diff") + args.toList()
         console.log("Executing: git ${allArgs.joinToString(" ")}")
-        return git.callMain(jsArrayOf(*allArgs.toTypedArray()))
+        return git.callMain(jsArrayOf(*allArgs.toTypedArray())).await<JsNumber>().toInt()
     }
 
     /**
      * Execute git status
      */
-    fun status(): Int {
+    suspend fun status(): Int {
         console.log("Executing: git status")
-        return git.callMain(jsArrayOf("status"))
+        return git.callMain(jsArrayOf("status")).await<JsNumber>().toInt()
     }
 
     /**
      * Execute git log
      * @param args Optional arguments (e.g., "--oneline", "-10")
      */
-    fun log(vararg args: String): Int {
+    suspend fun log(vararg args: String): Int {
         val allArgs = listOf("log") + args.toList()
         console.log("Executing: git ${allArgs.joinToString(" ")}")
-        return git.callMain(jsArrayOf(*allArgs.toTypedArray()))
+        return git.callMain(jsArrayOf(*allArgs.toTypedArray())).await<JsNumber>().toInt()
     }
 
     /**
      * Execute git add
      * @param files Files to add
      */
-    fun add(vararg files: String): Int {
+    suspend fun add(vararg files: String): Int {
         val allArgs = listOf("add") + files.toList()
         console.log("Executing: git ${allArgs.joinToString(" ")}")
-        return git.callMain(jsArrayOf(*allArgs.toTypedArray()))
+        return git.callMain(jsArrayOf(*allArgs.toTypedArray())).await<JsNumber>().toInt()
     }
 
     /**
      * Execute git commit
      * @param message Commit message
      */
-    fun commit(message: String): Int {
+    suspend fun commit(message: String): Int {
         console.log("Executing: git commit -m \"$message\"")
-        return git.callMain(jsArrayOf("commit", "-m", message))
+        return git.callMain(jsArrayOf("commit", "-m", message)).await<JsNumber>().toInt()
     }
 
     /**
      * Execute git pull
      */
-    fun pull(): Int {
+    suspend fun pull(): Int {
         console.log("Executing: git pull")
-        return git.callMain(jsArrayOf("pull", "origin"))
+        return git.callMain(jsArrayOf("pull", "origin")).await<JsNumber>().toInt()
     }
 
     /**
      * Execute git push
      */
-    fun push(): Int {
+    suspend fun push(): Int {
         console.log("Executing: git push")
-        return git.callMain(jsArrayOf("push"))
+        return git.callMain(jsArrayOf("push")).await<JsNumber>().toInt()
     }
 
     /**
      * Execute git branch
      * @param args Optional arguments (e.g., branch name)
      */
-    fun branch(vararg args: String): Int {
+    suspend fun branch(vararg args: String): Int {
         val allArgs = mutableListOf("branch")
         allArgs.addAll(args.toList())
         console.log("Executing: git ${allArgs.joinToString(" ")}")
-        return git.callMain(jsArrayOf(*allArgs.toTypedArray()))
+        return git.callMain(jsArrayOf(*allArgs.toTypedArray())).await<JsNumber>().toInt()
     }
     
     /**
      * List all branches (alternative to branch -a)
      */
-    fun listBranches(): Int {
+    suspend fun listBranches(): Int {
         console.log("Executing: git branch --list")
-        return git.callMain(jsArrayOf("branch", "--list"))
+        return git.callMain(jsArrayOf("branch", "--list")).await<JsNumber>().toInt()
     }
 
     /**
      * Execute git checkout
      * @param branch Branch name or commit hash
      */
-    fun checkout(branch: String): Int {
+    suspend fun checkout(branch: String): Int {
         console.log("Executing: git checkout $branch")
-        return git.callMain(jsArrayOf("checkout", branch))
+        return git.callMain(jsArrayOf("checkout", branch)).await<JsNumber>().toInt()
     }
 
     /**
@@ -171,9 +171,9 @@ class GitRepository(private val git: LibGit2Module) {
      * Execute any git command
      * @param command Command and arguments
      */
-    fun execute(vararg command: String): Int {
+    suspend fun execute(vararg command: String): Int {
         console.log("Executing: git ${command.joinToString(" ")}")
-        return git.callMain(jsArrayOf(*command))
+        return git.callMain(jsArrayOf(*command)).await<JsNumber>().toInt()
     }
 
     /**
@@ -184,10 +184,10 @@ class GitRepository(private val git: LibGit2Module) {
     /**
      * Get current branch name
      */
-    fun getCurrentBranch(): String? {
+    suspend fun getCurrentBranch(): String? {
         return try {
             // Try to get current branch using symbolic-ref
-            val exitCode = git.callMain(jsArrayOf("symbolic-ref", "--short", "HEAD"))
+            val exitCode = git.callMain(jsArrayOf("symbolic-ref", "--short", "HEAD")).await<JsNumber>().toInt()
             if (exitCode == 0) {
                 // Successfully got branch name
                 null // Output goes to console
